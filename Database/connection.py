@@ -8,7 +8,8 @@
 #POR EL PRINCIPIO DE SOLID
 
 #Libreria para realizar peticion a HTTP, algo similar a postman 
-import requests
+import requests #para consumir aPis y gestionar solicitudes de forma sencilla
+
 
 #Importamos config del sistama
 from Config.settings import (
@@ -29,7 +30,7 @@ class SAPConnection:
         
             # Datos que SAP espera recibir
             # exactamente igual que en postman
-        datos = {
+        datos = { #Credenciales para poder hacer login
 
             #DB SAP
             "CompanyDB": SAP_COMPANY,
@@ -47,7 +48,7 @@ class SAPConnection:
             json=datos,
             
             # Ignora validaciones SSL internas
-            verify=False,
+            verify=False, 
             
             #Tiempo max espera
             timeout=30
@@ -60,7 +61,7 @@ class SAPConnection:
         #Exepcion autotomatica de protocolos
         respuesta.raise_for_status()
         
-        resultado = respuesta.json() #Convertir la respuesta a json
+        resultado = respuesta.json() #Convertir a un diccionario a python 
         # Ejemplo de respuesta:
         #
         # {
