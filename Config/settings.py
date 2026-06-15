@@ -12,8 +12,8 @@
 
 #-------------------------------------------------
 
-import os # Nos permite "acceder" a las varibles del sistema y del archivo .env
-from dotenv import load_dotenv # Nos permite cargar las variables del archivo.env
+import os # Nos permite "acceder" a las varibles del sistema y del archivo .envv
+from dotenv import load_dotenv # nos permite cargar las variables del archivo.env
 
 #cargar variablles .env
 load_dotenv()

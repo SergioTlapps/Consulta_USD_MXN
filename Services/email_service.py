@@ -9,7 +9,7 @@
 # - Crear mensaje
 # - Adjuntar archivos
 # -- Enviar correo
-
+import os
 
 import smtplib
 
@@ -18,9 +18,10 @@ from email.mime.text import MIMEText #Agregar texto al correo
 from email.mime.base import MIMEBase #Archivos adjuntos
 from email import encoders #Prepra archivos antes de enviarlos por si vienen en binario
 
+
 from Config.settings import(
     EMAIL_USER,
-    EMAEIL_PASSWORD
+    EMAIL_PASSWORD
 )
 
 class EmailService:
@@ -66,36 +67,36 @@ class EmailService:
             parte #Adjunta el archivo en el correo , encoer, excel es un binario y por el correo viaja como texto 
             #entonces sencesita convertir
         )
-        
+
         parte.add_header(#info extra como fehca, remi, destinatario y aparece como adjunto
-            "Content-Disposition","como debe mostrarse este contenido?"
+            "Content-Disposition",#decir que es un archivo adjunto
             f"attachment; filename={archivo_adjunto}" # dice algo parecido a esto Este archivo debe aparecer como ADJUNTO
             
         )
-        
+                
         mensaje.attach(
             parte
         )
         
         #Conexion SMTP
         servidor = smtplib.SMTP(
-            "sergios@tlapps.mx",
+            "smtp.gmail.com",#direccion a gmail y el 587 es su puerto nos vamos a concetar a ese
             587
         )
         
-        servidor.starttls()
+        servidor.starttls() #Coxexion segura al sevidor va a estar cifrado
         
         
-        servidor.login(
+        servidor.login( #credenciales
             EMAIL_USER,
-            EMAEIL_PASSWORD
+            EMAIL_PASSWORD
         )
         
-        servidor.send_message(
+        servidor.send_message( #enviar mensaje
             mensaje
         )
         
-        servidor.quit
+        servidor.quit()#cierra conexion al servidor gmail
         
 # Crear correo
 #mensaje = MIMEMultipart()

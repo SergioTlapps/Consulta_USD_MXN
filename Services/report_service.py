@@ -42,7 +42,7 @@ class ReportService:
             
             "61 - 90 Días": dataframe["61 - 90 Días"].sum(),
             
-            "+91 Días": dataframe["+91 Días"].sum(),
+            "+91 Días": dataframe["+91 Días"].sum(), 
             
             "Saldo Total Pendiente":dataframe["Saldo Total Pendiente"].sum()
         }
