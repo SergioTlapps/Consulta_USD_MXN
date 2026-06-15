@@ -16,87 +16,241 @@
 # ↓
 # Enviar correo
 #
-#Clase encargada del login
+# Clase encargada de autenticarse en SAP
 from Database.connection import SAPConnection
-#Clase encargada del consultar vistas
+
+# Clase encargada de exponer y consultar vistas SAP
 from Services.sap_service import SAPService
-#Nombre de la vista
-from Config.views import VISTA_MXN,VISTA_USD
-#Pandas
+
+# Nombres de las vistas configuradas
+from Config.views import (
+    VISTA_USD,
+    VISTA_MXN
+)
+
+# Clase encargada de trabajar con Pandas
 from Services.report_service import ReportService
+
+# Clase encargada de generar Excel
 from Services.excel_service import ExcelService
 
-# --------------------------------------------
-# Obtener SessionId
-# --------------------------------------------
-session_id = SAPConnection.login()
-print(
-    f"Sesion obtenida: {session_id}"
-)
+# Clase encargada de generar HTML
+from Templates.report_template import ReportTemplate
+
+# Clase encargada de enviar correos
+from Services.email_service import EmailService
 
 
-# --------------------------------------------
-# Exponer Vista USD
-# --------------------------------------------
 
-SAPService.expose_view (
-    session_id,
-    VISTA_USD
-)
-print(
-    "Vista USD expuesta correctamente"
-)
+# ----------------------------------------------------
+# MANEJO GLOBAL DE ERRORES
+# ----------------------------------------------------
+# Cualquier error que ocurra dentro del sistema
+# sera capturado aqui.
+# ----------------------------------------------------
+
+try:
 
 
-# --------------------------------------------
-# Exponer Vista USD
-# --------------------------------------------
-datos = SAPService.get_view_data(
-    session_id,
-    VISTA_USD
-)
+    # ----------------------------------------------------
+    # LOGIN SAP
+    # ----------------------------------------------------
+    # SAP devuelve un SessionId que será utilizado
+    # durante todo el proceso.
+    # ----------------------------------------------------
 
-# Convertir respuesta SAP a DataFrame
-dataframe = ReportService.json_to_dataframe(
-    datos #investi
-)
+    session_id = SAPConnection.login()
 
-#Tatales en tabla
-totales = ReportService.calcular_totales(
-    dataframe
-)
-print("\n ==== Totales USD ===")
-
-for concepto, valor in totales.items():
     print(
-        f"{concepto}: {valor:,.2f}"
+        f"\nSesion obtenida: {session_id}"
     )
 
 
-#----------------------------------
-#Report excel
-#----------------------------------
-ruta_excel = ExcelService.generar_excel(dataframe,
-    "Reporte_USD.xlsx"
-)
-print(f"\Excel generado: {ruta_excel}")
+    # ----------------------------------------------------
+    # EXPONER VISTA USD
+    # ----------------------------------------------------
+    # Antes de consultar una vista SAP requiere
+    # que esta sea expuesta.
+    # ----------------------------------------------------
+
+    SAPService.expose_view(
+        session_id,
+        VISTA_USD
+    )
+
+    print(
+        "\nVista USD expuesta correctamente"
+    )
+
+    # ----------------------------------------------------
+    # EXPONER VISTA MXN
+    # ----------------------------------------------------
+    SAPService.expose_view(
+        session_id,
+        VISTA_MXN
+    )
+    print(
+        "Vista MXN expuesta correctamente"
+    )
+
+    # ----------------------------------------------------
+    # OBTENER DATOS USD
+    # ----------------------------------------------------
+    # Se realiza la consulta GET hacia SAP.
+    # ----------------------------------------------------
+
+    datos_USD = SAPService.get_view_data(
+        session_id,
+        VISTA_USD
+    )
+
+    print(
+        "\nConsulta SAP realizada correctamente USD"
+    )
+
+    # ----------------------------------------------------
+    # OBTENER DATOS MXN
+    # ----------------------------------------------------
+    datos_MXN = SAPService.get_view_data(
+        session_id,
+        VISTA_MXN
+    )
+    print(
+        "\nConsulta SAP realizada correctamente MXN"
+    )
+
+    # ----------------------------------------------------
+    # CONVERTIR JSON A DATAFRAME
+    # ----------------------------------------------------
+    # SAP devuelve JSON.
+    # ----------------------------------------------------
+
+    dataframeUSD = ReportService.json_to_dataframe(
+        datos_USD
+    )
+
+    dataframeMXN = ReportService.json_to_dataframe(
+        datos_MXN
+    )
+    # ----------------------------------------------------
+    # CALCULAR TOTALES
+    # ----------------------------------------------------
+    # Se suman todas las columnas necesarias para
+    # construir el reporte ejecutivo.
+    # ----------------------------------------------------
+
+    totales_USD = ReportService.calcular_totales(
+        dataframeUSD
+    )
+
+    #print(
+    #    "\n==== TOTALES USD ===="
+    #)
+
+    #for concepto, valor in totales.items():
+    #
+    #    print(
+    #        f"{concepto}: {valor:,.2f}"
+    #    )
+        
+    # --------- MXN ---------------
+    # ----
+    totales_MXN = ReportService.calcular_totales(
+        dataframeMXN
+    )
 
 
+    # ----------------------------------------------------
+    # GENERAR HTML
+    # ----------------------------------------------------
+    # Se genera el cuerpo del correo utilizando
+    # una plantilla HTML.
+    # ----------------------------------------------------
+
+    html_USD = ReportTemplate.generar_html(
+        totales_USD,
+        "USD"
+    )
+
+    print(
+        "\nHTML generado correctamente de USD"
+    )
+
+    #--------------- MNX HTML -----------------
+    html_MXN = ReportTemplate.generar_html(
+        totales_MXN,
+        "MXN"
+    )
+
+    print(
+        "\nHTML generado correctamente de MXN"
+    )
+
+    # ----------------------------------------------------
+    # GENERAR EXCEL
+    # ----------------------------------------------------
+    # Se genera el archivo Excel que sera adjuntado
+    # en el correo
+    # ----------------------------------------------------
+
+    ruta_excel_USD = ExcelService.generar_excel(
+        dataframeUSD,
+        "Reporte_USD.xlsx"
+    )
+
+    print(
+        f"\nExcel generado: {ruta_excel_USD}"
+    )
+
+    # -------------- MXN Excel ---------------------
+    ruta_excel_MXN = ExcelService.generar_excel(
+        dataframeMXN,
+        "Reporte_MXN.xlsx"
+    )
+    print(
+        f"\nExcel generado: {ruta_excel_MXN}"
+    )
 
 
+    # ----------------------------------------------------
+    # ENVIAR CORREO USD 
+    # ----------------------------------------------------
+    # Se envia:
+    #
+    # - HTML generado
+    # - Excel adjunto
+    #
+    # ----------------------------------------------------
 
+    EmailService.enviar_correo(
 
+        destinatario="shekosantana@gmail.com",
 
-print(dataframe)
+        asunto="Reporte Antiguedad de Saldos USD",
 
+        html=html_USD,
 
-print(
-    "Consulta realizada correctamente"
-)
+        archivo_adjunto=ruta_excel_USD
 
-#print(
-#    datos
-#)
+    )
 
-print(type(datos))
+    print(
+        "\nCorreo enviado correctamente USD"
+    )
 
+    # --------------- CORREO MXN --------------------
+    EmailService.enviar_correo(
+        destinatario="shekosantana@gmail.com",
+        asunto="Reporte de Antiguedad MXN",
+        html= html_MXN,
+        archivo_adjunto=ruta_excel_MXN
+    )
+    print(
+        "\nCorreo enviado correctamente MXN"
+    )
+
+except Exception as error:
+
+    print(
+        f"\nERROR EN EL SISTEMA: {error}"
+    )
