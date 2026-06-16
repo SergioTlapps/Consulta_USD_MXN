@@ -6,7 +6,7 @@
 #
 # Responsabilidades:
 #
-# - Crear diseño HTML
+# . Crear diseño HTML
 # - Mostrar totales
 # - Mostrar moneda del reporte
 
@@ -132,7 +132,7 @@ class ReportTemplate:
         <hr>
 
         <p style="color:#777;">
-            Este correo fue generado automáticamente por el sistema de cobranza.
+            Este correo fue generado automaticamente por el sistema de cobranza.
         </p>
 
         <p style="color:#777;">

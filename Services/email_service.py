@@ -1,22 +1,15 @@
 # ----------------------------------------------------
 # email_service.py
 # ----------------------------------------------------
-# Clase encargada exclusivamente
-# de enviar correos.
-#
-# Responsabilidades:
-#
-# - Crear mensaje
-# - Adjuntar archivos
-# -- Enviar correo
+
 import os
 
 import smtplib
 
-from email.mime.multipart import MIMEMultipart #Base del cuerpo del correo vacio acepta todo
-from email.mime.text import MIMEText #Agregar texto al correo
-from email.mime.base import MIMEBase #Archivos adjuntos
-from email import encoders #Prepra archivos antes de enviarlos por si vienen en binario
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText 
+from email.mime.base import MIMEBase 
+from email import encoders 
 
 
 from Config.settings import(
@@ -32,18 +25,13 @@ class EmailService:
         html,
         archivo_adjunto  
     ):
-        #Crear estructura correoo
-        mensaje = MIMEMultipart() #correo vacio
-        
-        mensaje["From"] = EMAIL_USER #quien envia el correo
-        
-        mensaje["To"] = destinatario #para quien va
-        
-        mensaje["Subject"] = asunto #Asunto
-
+        mensaje = MIMEMultipart() 
+        mensaje["From"] = EMAIL_USER 
+        mensaje["To"] = destinatario 
+        mensaje["Subject"] = asunto 
         # Agregar HTML
-        mensaje.attach( #attach es agregar el contenido html al correo 
-            MIMEText( # va ser contenido html
+        mensaje.attach(
+            MIMEText(
                 html,
                 "html"
             )
@@ -52,25 +40,24 @@ class EmailService:
         #Adjuntar excel
         with open(
             archivo_adjunto,
-            "rb"  #read-bianry
-        )as archivo: #guadamos todo en el nombre de archivo
-            parte = MIMEBase( #espacio para guardar el archivo
-                "application", #Categoria porque dentro viene excel , pdf , etc
-                "octet-stream" #Archivo binario generoico, como no se sabe que archivo va a llegar
+            "rb"  
+        )as archivo: 
+            parte = MIMEBase( 
+                "application",
+                "octet-stream" 
             )
             
-            parte.set_payload( #lee todos los bytes del Excel.
-                archivo.read()#esto es que meta el contenido real de excel dentro del espacio
+            parte.set_payload( 
+                archivo.read()
             )
 
         encoders.encode_base64(
-            parte #Adjunta el archivo en el correo , encoer, excel es un binario y por el correo viaja como texto 
-            #entonces sencesita convertir
+            parte 
         )
 
-        parte.add_header(#info extra como fehca, remi, destinatario y aparece como adjunto
-            "Content-Disposition",#decir que es un archivo adjunto
-            f"attachment; filename={archivo_adjunto}" # dice algo parecido a esto Este archivo debe aparecer como ADJUNTO
+        parte.add_header(
+            "Content-Disposition",
+            f"attachment; filename={archivo_adjunto}"
             
         )
                 
@@ -80,48 +67,25 @@ class EmailService:
         
         #Conexion SMTP
         servidor = smtplib.SMTP(
-            "smtp.gmail.com",#direccion a gmail y el 587 es su puerto nos vamos a concetar a ese
+            "smtp.gmail.com",
             587
         )
         
-        servidor.starttls() #Coxexion segura al sevidor va a estar cifrado
+        servidor.starttls() 
         
         
-        servidor.login( #credenciales
+        servidor.login( 
             EMAIL_USER,
             EMAIL_PASSWORD
         )
         
-        servidor.send_message( #enviar mensaje
+        servidor.send_message( 
             mensaje
         )
         
-        servidor.quit()#cierra conexion al servidor gmail
+        servidor.quit()
         
-# Crear correo
-#mensaje = MIMEMultipart()
 
-# Agregar HTML
-#mensaje.attach(...)
-
-# Abrir Excel
-#with open(...)
-
-# Adjuntar Excel
-#mensaje.attach(...)
-
-# Conectarse a Gmail
-#servidor = smtplib.SMTP(...)
-
-# Login
-#servidor.login(...)
-
-# Enviar
-#servidor.send_message(...)
-
-# Salir
-#servidor.quit()
-        
         
         
         
